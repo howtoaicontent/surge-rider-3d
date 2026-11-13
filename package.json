@@ -1,0 +1,18 @@
+{
+  "name": "surge-rider-3d",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Surge Rider 3D - a jetski arcade game built with three.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "start": "node build.mjs && npx --yes serve dist",
+    "release-export": "node scripts/release-export.mjs"
+  },
+  "dependencies": {
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2"
+  }
+}
