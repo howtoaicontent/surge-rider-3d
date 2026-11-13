@@ -3,7 +3,7 @@
 A jetski arcade game in the browser, built with [three.js](https://threejs.org).
 
 
-**[Play it now](https://howtoaicontent.github.io/ijustwannajetski/)**
+**[Play it now](https://howtoaicontent.github.io/surge-rider-3d/)**
 
 ## What keeps you riding
 
