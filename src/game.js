@@ -260,6 +260,7 @@ const M = {
   chrome: new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 1, roughness: 0.2 }),
   glass: new THREE.MeshPhysicalMaterial({ color: 0x223344, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.55 }),
   gold: new THREE.MeshStandardMaterial({ color: 0xffc83a, metalness: 1, roughness: 0.22, emissive: 0x4a2a00 }),
+  star: new THREE.MeshStandardMaterial({ color: 0xffd23a, metalness: 0.1, roughness: 0.6, emissive: 0x3a2400 }),
   skin: new THREE.MeshStandardMaterial({ color: 0xe9b98a, roughness: 0.7 }),
   shorts: new THREE.MeshStandardMaterial({ color: 0x24357a, roughness: 0.8 }),
   shark: new THREE.MeshStandardMaterial({ color: 0x5b6773, roughness: 0.55, side: THREE.DoubleSide }),
@@ -838,7 +839,7 @@ function clearWorld() {
 }
 function newGame() {
   clearWorld();
-  G = { t: 0, stars: 0, banked: 0, rank: 0, score: 0, dist: 0, lives: 3, mult: 1, multT: 0, nitro: 60, best: loadBest(), nextLife: 20000, newBest: false,
+  G = { t: 0, stars: 0, banked: 0, rank: 0, score: 0, dist: 0, lives: 3, mult: 1, multT: 0, nitro: 60, best: loadBest(), nextLife: 10000, newBest: false,
     stats: { tricks: 0, takedowns: 0, close: 0, wipeouts: 0 },
     p: { shieldT: 0, hits: 0, hitCD: 0, sandT: 0, x: rc(0), y: 0, z: 0, vz: 0, vx: 0, speed: 150, heading: 0, spin: 0, spinV: 0, air: false, hop: false, airT: 0, boostT: 0, invuln: 4, state: 'ride', lean: 0, wakeCD: 0, boosting: false, wasBoost: false },
     lastHaz: 0, lastBig: 0, noHazY: -1500, ents: [], parts: [], pops: [], boom: null, flash: 0, nextY: -700, ts: 1, shake: 0, wipe: null, msg: null, rivalT: 4, overT: 0,
@@ -890,9 +891,9 @@ function spawnRow(y) {
     case 'shield': E.push({ t: 'shield', x: xr(), y, r: 13 }); break;
     case 'coins': { const x0 = c + rand(-h + 70, h - 70); for (let i = 0; i < 6; i++) E.push({ t: 'coin', x: x0 + Math.sin(i * 0.7) * 30, y: y - i * 34, r: 10 }); break; }
     case 'log': E.push({ t: 'log', x: xr(), y, len: intro ? 70 : rand(70, 110), a: rand(-0.5, 0.5) }); break;
-    case 'shark': E.push({ t: 'shark', bx: c + rand(-h * 0.5, h * 0.5), x: 0, y, amp: rand(40, 110), sp: rand(1.2, 2.4), ph: rand(0, TAU), r: 14, dir: 1 }); break;
+    case 'shark': E.push({ t: 'shark', bx: c + rand(-h * 0.5, h * 0.5), x: 0, y, amp: rand(40, 110), sp: rand(1.2, 2.4) * 0.7, ph: rand(0, TAU), r: 14, dir: 1 }); break;
     case 'rival': spawnRival(y); break;
-    case 'boat': { const dir = Math.random() < 0.5 ? -1 : 1; E.push({ t: 'boat', x: c + rand(-h * 0.4, h * 0.4), y, vx: dir * rand(110, 160), len: 110, wid: 36, wakeT: 0, yaw: dir > 0 ? -Math.PI / 2 : Math.PI / 2 }); break; }
+    case 'boat': { const dir = Math.random() < 0.5 ? -1 : 1; E.push({ t: 'boat', x: c + rand(-h * 0.4, h * 0.4), y, vx: dir * rand(110, 160) * 0.7, len: 110, wid: 36, wakeT: 0, yaw: dir > 0 ? -Math.PI / 2 : Math.PI / 2 }); break; }
     case 'whirl': E.push({ t: 'whirl', x: c + rand(-h * 0.5, h * 0.5), y, r: 72, rot: 0, cw: Math.random() < 0.5 ? -1 : 1 }); break;
     case 'rockgate': { const gx = c + rand(-h * 0.5, h * 0.5); for (let x = c - h + 18; x <= c + h - 18; x += 44) { if (Math.abs(x - gx) < 95) continue; rock(x, y, rand(17, 22)); } for (let i = -1; i <= 1; i++) E.push({ t: 'coin', x: gx, y: y + i * 40, r: 10 }); break; }
     case 'rampcoins': { const x = c + rand(-h * 0.5, h * 0.5); ramp(x); for (let i = 0; i < 4; i++) E.push({ t: 'coin', x, y: y - 80 - i * 34, r: 10, high: true }); break; }
@@ -913,7 +914,7 @@ function createMesh(e) {
     case 'pad': m = new THREE.Mesh(GEO.pad, M.pad); m.scale.set(e.w, 1, e.l); m.position.set(e.x, 0.8, e.y); m.renderOrder = 3; break;
     case 'nitro': m = new THREE.Group(); { const can = mesh(GEO.can, M.red); can.add(mesh(GEO.canCap, M.chrome, 0, 12, 0)); m.add(can); m.userData.can = can;
       const ring = new THREE.Mesh(GEO.glowRing, M.nitroGlow); ring.rotation.x = Math.PI / 2; ring.position.y = -12; m.add(ring); } break;
-    case 'coin': m = mesh(GEO.star, M.gold); break;
+    case 'coin': m = mesh(GEO.star, M.star); m.scale.setScalar(0.75); break;
     case 'wrench': case 'shield': { m = new THREE.Group(); const isW = e.t === 'wrench';
       const core = isW ? mesh(GEO.plus, PICK.green) : mesh(GEO.buoyTop, PICK.blue); if (!isW) core.scale.setScalar(1.8); m.add(core);
       const ring = new THREE.Mesh(GEO.glowRing, isW ? PICK.greenGlow : PICK.blueGlow); m.add(ring); } break;
@@ -988,6 +989,7 @@ function updatePlayer(dt, d) {
   const boosted = p.boosting || p.boostT > 0;
   let cap = inp.brake ? 0 : maxS * (inp.up ? 1 : 0.74);
   if (boosted && !inp.brake) cap = maxS * 1.5;
+  if (p.slowT > 0) { p.slowT -= dt; cap = Math.min(cap, lerp(150, cap, 1 - p.slowT / 4)); } // gentle re-entry after a crash
   if (!p.air) {
     if (p.speed < cap) p.speed = Math.min(cap, p.speed + (boosted ? 650 : 240) * dt); else p.speed = Math.max(cap, p.speed - (inp.brake ? 420 : 130) * dt);
     const tr = 2.5 * (0.55 + 0.45 * Math.min(1, p.speed / 300));
@@ -1000,6 +1002,8 @@ function updatePlayer(dt, d) {
       if (inp.steer) { p.spinV += inp.steer * 22 * dt; p.spinV = clamp(p.spinV, -13, 13); }
       else { const tgt = Math.round(p.spin / TAU) * TAU; p.spinV = lerp(p.spinV, (tgt - p.spin) * 5, Math.min(1, dt * 6)); }
       p.spin += p.spinV * dt;
+      // landing assist: while coming down, pull the board toward the nearest full rotation
+      if (p.vz < 0 && p.z < 110) { p.spin = lerp(p.spin, Math.round(p.spin / TAU) * TAU, Math.min(1, dt * 7)); p.spinV *= Math.max(0, 1 - 4 * dt); }
     }
     p.vz -= 850 * dt; p.z += p.vz * dt; p.airT += dt;
     if (p.z <= 0) land();
@@ -1039,7 +1043,7 @@ function updatePlayer(dt, d) {
       case 'wrench': if (dd < e.r + 16 && p.z < 40) { e.dead = true; if (p.hits > 0) p.hits--; sfx.life(); pop('HULL REPAIRED', e.x, e.y, '#7CFFB2', 20, 40); } break;
       case 'shield': if (dd < e.r + 16 && p.z < 40) { e.dead = true; p.shieldT = 7; sfx.life(); pop('SHIELD!', e.x, e.y, '#8fd0ff', 22, 40); } break;
       case 'nitro': if (dd < e.r + 14 && p.z < 40) { e.dead = true; G.nitro = Math.min(100, G.nitro + 40); sfx.coin(); pop('+NITRO', e.x, e.y, '#ffb24d', 18); } break;
-      case 'coin': if (dd < e.r + 14 && (e.high ? true : p.z < 40)) { e.dead = true; G.stars++; const v = addScore(50); sfx.coin(); pop('+' + v, e.x, e.y, '#ffe14d', 15, e.high ? 70 : 20); } break;
+      case 'coin': if (dd < e.r + 28 &&(e.high ? true : p.z < 40)) { e.dead = true; G.stars++; const v = addScore(50); sfx.coin(); pop('+' + v, e.x, e.y, '#ffe14d', 15, e.high ? 70 : 20); } break;
       case 'wake': if (dd < 15 && !p.air && p.wakeCD <= 0 && p.speed > 170) { p.air = true; p.hop = true; p.vz = 140 + p.speed * 0.15; p.airT = 0; p.wakeCD = 0.5; splash(p.x, p.y, 6, 0.5); } break;
       case 'rival':
         if (e.state === 'ride' && dd < 24 && Math.abs(p.z - e.z) < 16 && e.bumpCD <= 0) {
@@ -1107,7 +1111,7 @@ function land() {
   const p = G.p; p.z = 0; p.air = false; p.vz = 0;
   if (p.hop) { p.hop = false; splash(p.x, p.y, 8, 0.6); return; }
   const n = ((p.spin % TAU) + TAU) % TAU, off = Math.min(n, TAU - n);
-  if (off > 0.62) { p.invuln = 0; wipeout('BAD LANDING!'); return; }
+  if (off > 1.0) { p.invuln = 0; wipeout('BAD LANDING!'); return; }
   const rots = Math.round(Math.abs(p.spin) / TAU);
   splash(p.x, p.y, 26, 1.1); sfx.splash(); G.shake = Math.max(G.shake, 5);
   if (rots > 0) { const v = addScore(350 * rots * rots); bumpMult(rots); G.stars += 2 * rots; buzz('medium'); G.stats.tricks++; banner((rots * 360) + '°!', '+' + v, '#ffe14d', 1.1, off > 0.3 ? 'SKETCHY LANDING' : 'CLEAN!'); sfx.trick(); }
@@ -1166,7 +1170,7 @@ function endWipe() {
     if (['rock', 'log', 'shark', 'whirl', 'boat'].includes(e.t) && e.y > ry - 400 && e.y < ry + 120) e.dead = true;
     if (e.t === 'rival' && Math.abs(e.y - ry) < 80 && Math.abs(e.x - p.x) < 40) e.x += 60;
   }
-  G.wipe = null; PTRAIL.reset(); repairSki(); p.hits = 0; p.state = 'ride'; p.invuln = 2.5; p.speed = 170; p.heading = 0; p.vx = 0; p.spin = 0; p.spinV = 0; p.z = 0; p.air = false; p.hop = false;
+  G.wipe = null; PTRAIL.reset(); repairSki(); p.hits = 0; p.state = 'ride'; p.invuln = 3; p.slowT = 4; p.boostT = 0; G.nitro = Math.max(G.nitro, 30); p.speed = 150; p.heading = 0; p.vx = 0; p.spin = 0; p.spinV = 0; p.z = 0; p.air = false; p.hop = false;
   PSKI.g.add(PRIDER.R); PRIDER.R.position.set(0, RIDER_Y, RIDER_Z); PRIDER.R.rotation.set(0, 0, 0);
   banner('BACK ON!', G.lives + (G.lives === 1 ? ' life left' : ' lives left'), '#7CFFB2', 1.3);
 }
@@ -1280,7 +1284,7 @@ function update(dtr) {
   if (G.msg) { G.msg.life -= dtr; if (G.msg.life <= 0) G.msg = null; }
   G.shake = Math.max(0, G.shake - dtr * 30);
   updateBoom(dtr);
-  if (G.score >= G.nextLife) { G.nextLife += 20000; if (G.lives < 5 && p.state === 'ride') { G.lives++; pop('EXTRA LIFE!', p.x, p.y, '#7CFFB2', 24, 60); sfx.life(); } }
+  if (G.score >= G.nextLife) { G.nextLife += G.t < 60 ? 10000 : 20000; if (G.lives < 5 && p.state === 'ride') { G.lives++; pop('EXTRA LIFE!', p.x, p.y, '#7CFFB2', 24, 60); sfx.life(); } }
 }
 
 // =====================================================================
@@ -1297,7 +1301,7 @@ function syncScene(dtr) {
       case 'buoy': m.position.set(e.x, Math.sin(t * 3 + e.ph) * 1.2 - 1, e.y); m.rotation.set(Math.sin(t * 2 + e.ph) * 0.12, 0, Math.cos(t * 2.3 + e.ph) * 0.12); break;
       case 'nitro': m.position.set(e.x, 18 + Math.sin(t * 3 + e.x) * 2, e.y); m.userData.can.rotation.y = t * 2; m.children[1].scale.setScalar(1 + Math.sin(t * 6) * 0.1); break;
       case 'wrench': case 'shield': m.position.set(e.x, 18 + Math.sin(t * 3 + e.x) * 2, e.y); m.rotation.y = t * 2.2; m.children[1].scale.setScalar(1 + Math.sin(t * 6) * 0.1); break;
-      case 'coin': m.position.set(e.x, (e.high ? 70 : 14) + Math.sin(t * 3 + e.y) * 1.5, e.y); m.rotation.y = t * 3 + e.y * 0.05; break;
+      case 'coin': m.position.set(e.x, (e.high ? 70 : 14) + Math.sin(t * 3 + e.y) * 1.5, e.y); m.rotation.y = t * 1.5 + e.y * 0.05; break;
       case 'shark': m.position.set(e.x, 0, e.y); m.scale.x = e.dir; break;
       case 'whirl': m.userData.a.rotation.y = -e.rot; m.userData.b.rotation.y = -e.rot * 1.6; break;
       case 'boat': m.position.set(e.x, Math.sin(t * 2 + e.y) * 0.8, e.y); m.rotation.set(0.03, e.yaw, Math.sin(t * 1.7) * 0.03); break;
@@ -1359,10 +1363,10 @@ function updateCamera(dtr) {
     _v.set(p.x + Math.sin(a) * R, state === 'garage' ? 40 : 48, p.y + Math.cos(a) * R); C.pos.lerp(_v, damp(dtr, 2));
     camera.position.copy(C.pos); camera.lookAt(p.x, 14, p.y);
   } else if (G.wipe) {
-    const w = G.wipe, mx = (w.rider.x + w.ski.x) / 2, my = (w.rider.y + w.ski.y) / 2, mh = Math.max(8, w.rider.z * 0.5);
+    const w = G.wipe, mx = w.rider.x, my = w.rider.y, mh = Math.max(4, w.rider.z);
     C.orbit += dtr * 0.35;
-    _v.set(mx + Math.sin(C.orbit) * 150, 75 + mh * 0.3, my + Math.cos(C.orbit) * 150);
-    C.pos.lerp(_v, damp(dtr, 2.5));
+    _v.set(mx + Math.sin(C.orbit) * 120, 60 + mh * 0.4, my + Math.cos(C.orbit) * 120);
+    C.pos.lerp(_v, damp(dtr, 4));
     camera.position.copy(C.pos); camera.lookAt(mx, mh, my);
     fovT = 58;
   } else if (camMode === 'helmet' && p.state === 'ride') {
