@@ -20,12 +20,6 @@ Progress is saved in the browser.
 
 `npm run build` writes the whole game to one file, `dist/index.html`. That file also runs when opened directly from disk.
 
-## Publish on GitHub Pages
-
-1. Push this folder to a GitHub repository (branch `main`).
-2. In the repository, open **Settings → Pages** and set **Source** to **GitHub Actions**.
-3. Every push to `main` builds the game and publishes it (see `.github/workflows/pages.yml`).
-
 ## Project layout
 
 - `src/game.js` – all game code (rendering, physics, spawning, HUD, audio)
